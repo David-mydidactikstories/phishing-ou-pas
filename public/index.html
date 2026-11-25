@@ -360,7 +360,6 @@
           <div class="ready-sub">Lis ta fiche à droite, puis lance la simulation.</div>
           <div class="who-in">
             <label>Ton prénom<input id="prenom" type="text" maxlength="30" autocomplete="off" placeholder="Ex : Bertille"></label>
-            <label>Comment ça se prononce ? (facultatif)<input id="prenom-dit" type="text" maxlength="30" autocomplete="off" placeholder="Ex : Berty"></label>
           </div>
           <button class="start" id="start"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><span id="start-txt">Start</span></button>
         </div>
@@ -566,7 +565,7 @@
   var $ = function (id) { return document.getElementById(id); };
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function prenomVal() { var v = ($("prenom") ? $("prenom").value : "").trim(); return v || "Bertille"; }
-  function prenomDitVal() { var v = ($("prenom-dit") ? $("prenom-dit").value : "").trim(); return v || prenomVal(); }
+  function prenomDitVal() { return prenomVal(); }
   /* Moteur vocal : ElevenLabs par défaut s'il est configuré côté serveur, Gemini en secours (?engine=gemini pour forcer). */
   var Eng = window.Live;
   (function () {
@@ -575,7 +574,7 @@
       if (c.elevenlabs && !force) Eng = window.LiveEL;
       else if (!c.gemini && c.elevenlabs) Eng = window.LiveEL;
     }).catch(function () {});
-    try { var sv = JSON.parse(localStorage.getItem("pop-prenom") || "{}"); if (sv.p) { $("prenom").value = sv.p; $("prenom-dit").value = sv.d || ""; } } catch (e) {}
+    try { var sv = JSON.parse(localStorage.getItem("pop-prenom") || "{}"); if (sv.p) { $("prenom").value = sv.p; } } catch (e) {}
   })();
 
   function renderCalls() {
@@ -708,7 +707,7 @@
     var pi = $("prenom");
     if (!pi.value.trim()) { pi.classList.add("bad"); pi.focus(); return; }
     pi.classList.remove("bad");
-    try { localStorage.setItem("pop-prenom", JSON.stringify({ p: pi.value.trim(), d: $("prenom-dit").value.trim() })); } catch (e) {}
+    try { localStorage.setItem("pop-prenom", JSON.stringify({ p: pi.value.trim() })); } catch (e) {}
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (AC && !actx) actx = new AC();
