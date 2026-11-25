@@ -278,6 +278,17 @@
   .flip:hover { border-color: var(--blue); }
   .flip:focus-visible { outline: 2px solid var(--blue); }
   .doc.ticket { background: #f7f9fd; border: 1px solid var(--line); }
+
+  .notif { position: absolute; left: 10px; right: 10px; top: 46px; z-index: 5; border: 0; text-align: left; cursor: pointer; font: inherit; color: var(--ink);
+    background: rgba(255,255,255,0.96); border-radius: 18px; padding: 10px 12px; box-shadow: 0 8px 24px rgba(20,30,70,0.25);
+    transform: translateY(-140%); opacity: 0; pointer-events: none; transition: transform .45s cubic-bezier(.2,1.3,.4,1), opacity .25s; }
+  .notif.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .notif .n-app { font-size: 0.7rem; font-weight: 700; color: var(--muted); display: flex; justify-content: space-between; text-transform: uppercase; letter-spacing: .03em; }
+  .notif .n-title { font-weight: 700; font-size: 0.9rem; margin-top: 2px; }
+  .notif .n-body { font-size: 0.85rem; margin-top: 2px; }
+  .notif .n-body .mono { font-family: var(--font-mono); font-weight: 700; }
+  .notif:focus-visible { outline: 2px solid var(--blue); }
+  .notif.hint .n-body { color: var(--muted); }
   .doc.sms { background: #eef1f6; border-radius: 18px 18px 18px 6px; padding: 12px 14px; }
   .doc.sms .sms-from { font-size: 0.78rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
   .doc.sms p { margin: 0; font-size: 0.92rem; }
@@ -351,6 +362,7 @@
     <div class="phone">
       <div class="screen" id="screen" data-state="idle">
         <div class="island"></div>
+        <button class="notif" id="notif" type="button" aria-live="polite"><div class="n-app"><span>Messages</span><span>maintenant</span></div><div class="n-title">WhatsApp</div><div class="n-body" id="notif-body">Touche pour lire le message</div></button>
         <div class="status"><span id="clock">10:42</span><span>5G ▮▮▮</span></div>
 
         <div class="view v-idle">
@@ -537,8 +549,7 @@
           '<p class="intro-txt">Tu as passé une commande sur Amazon et tu attends le colis cette semaine. Ton téléphone sonne.</p>' +
           '<div class="doc ticket"><div class="tid">Ta commande Amazon</div><h3>Livraison prévue cette semaine</h3>' +
           '<dl class="kv"><dt>Statut</dt><dd>En cours de livraison</dd><dt>Transporteur</dt><dd>Pas précisé</dd></dl></div>' +
-          '<div class="doc-head"><div><b>Le SMS qui arrive pendant l\'appel</b><div class="mini">Données fictives pour le jeu</div></div></div>' +
-          '<div class="doc sms"><div class="sms-from">WhatsApp</div><p>Ton code WhatsApp : <b class="mono">418-273</b>. Ne partage ce code avec personne.</p></div>' +
+          '<p class="intro-txt">Pendant l\'appel, un message peut arriver sur ton téléphone : touche-le pour le lire.</p>' +
           RULES;
       },
       grid: [
@@ -726,15 +737,53 @@
     startTimer = setTimeout(function () { startTimer = null; setState("incoming"); startRing(); }, 2000);
   }
 
+
+  /* Notification SMS qui arrive pendant l'appel 4 */
+  var smsTimer = null;
+  function smsBeep() {
+    try {
+      var C = window.AudioContext || window.webkitAudioContext; if (!C) return;
+      if (!actx) actx = new C();
+      var t = actx.currentTime;
+      [[880, 0], [1175, 0.16]].forEach(function (n) {
+        var o = actx.createOscillator(), g = actx.createGain();
+        o.type = "sine"; o.frequency.value = n[0]; o.connect(g); g.connect(actx.destination);
+        g.gain.setValueAtTime(0.0001, t + n[1]); g.gain.exponentialRampToValueAtTime(0.18, t + n[1] + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + n[1] + 0.3);
+        o.start(t + n[1]); o.stop(t + n[1] + 0.32);
+      });
+    } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) {}
+  }
+  function smsHide() {
+    if (smsTimer) { clearTimeout(smsTimer); smsTimer = null; }
+    var n = $("notif"); if (n) { n.classList.remove("show"); n.dataset.open = ""; $("notif-body").innerHTML = "Touche pour lire le message"; n.classList.add("hint"); }
+  }
+  function smsArrive() {
+    if (cur !== 3 || state !== "call") return;
+    var n = $("notif"); if (n.classList.contains("show")) return;
+    n.classList.add("hint"); n.dataset.open = "";
+    $("notif-body").textContent = "Touche pour lire le message";
+    n.classList.add("show"); smsBeep();
+  }
+  $("notif").addEventListener("click", function () {
+    var n = $("notif");
+    n.classList.remove("hint"); n.dataset.open = "1";
+    $("notif-body").innerHTML = 'Ton code WhatsApp : <span class="mono">418-273</span>. Ne partage ce code avec personne.';
+  });
+
   function answer() {
     stopRing();
     sec = 0; $("timer").textContent = "0:00"; setState("call");
     stopTimer();
     $("note").textContent = "Connexion…"; $("note").classList.remove("err");
     var warned = false;
+    smsHide();
     Eng.start(cur + 1, {
       prenom: prenomVal(), prenomDit: prenomDitVal(), manager: managerVal(),
+      onEvent: function (name) { if (name === "envoi_code") smsArrive(); },
       onReady: function () {
+        /* Moteur de secours (Gemini) : pas d'outil, le SMS arrive après un délai. */
+        if (cur === 3 && Eng === window.Live) smsTimer = setTimeout(smsArrive, 38000);
         $("note").textContent = cur === 2 ? "En ligne : c'est toi qui décroches, dis « Services aux membres, bonjour »" : "En ligne : parle normalement";
         sec = 0; $("timer").textContent = "0:00";
         timerId = setInterval(function () {
@@ -751,7 +800,7 @@
     });
   }
   /* Le résultat se déduit de l'appel : l'appelant a obtenu l'info ("obtenu") ou non. */
-  function hangup(gave, callback) { stopTimer(); Eng.stop(); decide(gave === true, callback === true); }
+  function hangup(gave, callback) { stopTimer(); smsHide(); Eng.stop(); decide(gave === true, callback === true); }
 
   function decide(gave, callback) {
     var s = SCN[cur];

@@ -126,6 +126,7 @@
               /* Le serveur ferme normalement la session juste après (end_call) ; filet de sécurité à 5 s. */
               if (!finTimer) finTimer = setTimeout(finish, 5000);
             }
+            if (c.tool_name === "envoi_code" && handlers.onEvent) handlers.onEvent("envoi_code");
             if (c.expects_response) ws.send(JSON.stringify({ type: "client_tool_result", tool_call_id: c.tool_call_id, result: "ok", is_error: false }));
           }
         };
