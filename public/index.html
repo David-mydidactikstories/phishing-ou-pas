@@ -434,9 +434,9 @@
 </main>
 <script src="live.js"></script>
 <script src="el.js"></script>
-<audio id="sfx-laugh" src="laugh.mp3" preload="auto"></audio>
-<audio id="sfx-fail" src="fail.mp3" preload="auto"></audio>
-<audio id="sfx-win" src="win.mp3" preload="auto"></audio>
+<audio id="sfx-laugh" src="laugh.mp3?v=3" preload="auto"></audio>
+<audio id="sfx-fail" src="fail.mp3?v=3" preload="auto"></audio>
+<audio id="sfx-win" src="win.mp3?v=3" preload="auto"></audio>
 <audio id="ring" src="ring.mp3" loop preload="auto"></audio>
 
 <script>
@@ -531,7 +531,7 @@
       ask: "Tu lis le code ou pas ?", yes: "Je lis le code", no: "Je ne le lis pas",
       hacker: true,
       head: { yes: "Piégé.", no: "Bien vu." },
-      lead: "Ce n'était pas bpost. Le code venait de WhatsApp : en le lisant, tu lui donnais ton compte. Un transporteur n'a jamais besoin d'un code reçu par SMS : à l'escroc, il suffisait de ton numéro de téléphone.",
+      lead: "Ce n'était pas bpost. Le code venait de WhatsApp : en le lisant, tu lui donnais ton compte. Un transporteur n’a jamais besoin d’un code reçu sur ton téléphone : à l'escroc, il suffisait de ton numéro de téléphone.",
       fiche: function () {
         return '<h2>Ton rôle : toi, un jour normal</h2>' +
           '<p class="intro-txt">Tu as passé une commande sur Amazon et tu attends le colis cette semaine. Ton téléphone sonne.</p>' +
@@ -548,7 +548,7 @@
         ["A résisté à l'urgence", "« Le colis repart ce soir, il y aura des frais. »"],
         ["A refusé de lire le code", "A tenu son refus jusqu'au bout."]
       ],
-      params: [["Rôle de l'appelante", "Fausse employée « Stéphanie de bpost »"], ["Prétexte", "Rendez-vous de livraison à planifier"], ["Ce qu'elle veut", "Le code WhatsApp reçu par SMS"], ["Abandonne après", "2 refus ou 2 demandes de vérification"]],
+      params: [["Rôle de l'appelante", "Fausse employée « Stéphanie de bpost »"], ["Prétexte", "Rendez-vous de livraison à planifier"], ["Ce qu'elle veut", "Le code WhatsApp reçu sur ton téléphone"], ["Abandonne après", "2 refus ou 2 demandes de vérification"]],
       reflex: [
         ["Un code reçu par SMS ne se dit à personne", "Ni à un livreur, ni à ta banque, ni à un collègue. Il sert à prouver que c'est toi."],
         ["Lis le SMS en entier", "Il disait WhatsApp, pas bpost : l'appel et le message ne collaient pas."],
