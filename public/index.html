@@ -420,6 +420,7 @@
 </main>
 <script src="live.js"></script>
 <audio id="sfx-laugh" src="laugh.mp3" preload="auto"></audio>
+<audio id="sfx-fail" src="fail.mp3" preload="auto"></audio>
 <audio id="sfx-win" src="win.mp3" preload="auto"></audio>
 <audio id="ring" src="ring.mp3" loop preload="auto"></audio>
 
@@ -685,8 +686,10 @@
   function decide(gave, callback) {
     var s = SCN[cur];
     var st = $("stamp");
-    st.className = "verdict-stamp " + (s.hacker ? "h" : "l");
-    st.textContent = s.hacker ? "Hacker" : "Légitime";
+    /* Appel légitime refusé sans vérifier : tampon rouge « Tu doutes trop ». */
+    var tooMuch = !s.hacker && !gave;
+    st.className = "verdict-stamp " + ((s.hacker || tooMuch) ? "h" : "l");
+    st.textContent = s.hacker ? "Hacker" : (tooMuch ? "Tu doutes trop" : "Légitime");
     $("r-head").textContent = gave ? s.head.yes : s.head.no;
     $("r-lead").textContent = s.lead;
     $("r-detect").textContent = callback ? "Ce que tu as fait : tu as vérifié en rappelant le poste interne 4412." : "Ce que tu as fait : " + (gave ? s.yes : s.no) + ".";
@@ -694,8 +697,8 @@
     setState("result");
     /* Sons : réussi (n'a pas donné à un hacker, ou a donné au vrai) = applaudissements ; piégé = rire du hacker. */
     var ok = s.hacker ? !gave : gave;
-    var snd = ok ? $("sfx-win") : (s.hacker ? $("sfx-laugh") : null);
-    ["sfx-win", "sfx-laugh"].forEach(function (id) { try { $(id).pause(); $(id).currentTime = 0; } catch (e) {} });
+    var snd = ok ? $("sfx-win") : (s.hacker ? $("sfx-laugh") : $("sfx-fail"));
+    ["sfx-win", "sfx-laugh", "sfx-fail"].forEach(function (id) { try { $(id).pause(); $(id).currentTime = 0; } catch (e) {} });
     if (snd) { var p = snd.play(); if (p && p.catch) p.catch(function () {}); }
   }
 
