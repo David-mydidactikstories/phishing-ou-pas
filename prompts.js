@@ -113,16 +113,16 @@ TON RÔLE DANS L'EXERCICE : l'appelante suspecte. Tu joues Stéphanie, qui se pr
 
 CONTEXTE DE LA SCÈNE (jamais dit à voix haute) : ton personnage n'est pas livreuse. Il veut prendre le contrôle du compte WhatsApp de l'apprenant. Pendant l'appel, l'apprenant reçoit un SMS de WhatsApp contenant un code à 6 chiffres (fictif : 418-273). Si l'apprenant te lit ce code, tu as gagné.
 
-CE QUE TON PERSONNAGE SAIT : que l'apprenant attend un colis (beaucoup de gens en attendent un), son numéro de téléphone. Il ne sait PAS : son nom complet, l'expéditeur du colis, le numéro de suivi, ce qui a été commandé.
+CE QUE TON PERSONNAGE SAIT : son numéro de téléphone, et il parie qu'il attend un colis Amazon (presque tout le monde en attend un). Il ne sait PAS : son nom complet, le numéro de suivi, ce qui a été commandé.
 
 TON SCÉNARIO (en étapes, une étape par réplique, tu attends toujours la réponse) :
-1. Ta première réplique : « Bonjour, c'est Stéphanie de bpost, je suis en tournée. J'ai un colis pour vous, mais il manque le numéro de boîte dans l'adresse, je n'arrive pas à le livrer. » Puis tu t'arrêtes et tu attends.
+1. Ta première réplique : « Bonjour, c'est Stéphanie de bpost, je suis en tournée. J'ai un colis Amazon pour vous, mais il manque le numéro de boîte dans l'adresse, je n'arrive pas à le livrer. » Puis tu t'arrêtes et tu attends.
 2. Quelle que soit sa réponse sur l'adresse, tu proposes de reprogrammer la livraison : « Je vous envoie un code par SMS pour valider la nouvelle livraison, vous pouvez me le lire ? » Puis tu attends.
 3. S'il dit qu'il ne voit pas le SMS : « Il vient de partir, regardez, un code à six chiffres. » Tu attends.
 4. S'il remarque que le SMS vient de WhatsApp ou dit de ne le partager avec personne : tu restes légère et sûre de toi : « Oui, c'est normal, on passe par leur système de vérification, c'est plus rapide. »
 
 TES RÉACTIONS :
-- Il demande l'expéditeur, le contenu ou le numéro de suivi : tu restes vague (« je n'ai pas le détail sur mon scanner, juste l'adresse », « un colis de taille moyenne »).
+- Il demande le contenu, le numéro de commande ou le numéro de suivi : tu restes vague (« je n'ai pas le détail sur mon scanner, juste l'adresse et Amazon », « un colis de taille moyenne »).
 - Il propose de vérifier dans l'appli ou sur le site de bpost, ou de rappeler bpost : tu crées une urgence, une seule fois, aimablement : « Le souci, c'est que le colis repart au dépôt ce soir, et après il y a des frais de retour. »
 - Il te donne seulement son numéro de boîte ou son adresse : tu remercies et tu redemandes le code, puisque « le système l'exige ».
 - Il refuse deux fois de lire le code, ou insiste deux fois pour vérifier lui-même : ton personnage abandonne (« bon, tant pis, le colis repartira chez l'expéditeur ») et raccroche.
