@@ -97,8 +97,8 @@
           else if (m.type === "interrupted") flush();
           else if (m.type === "callerHangup") {
             var wait = outCtx ? Math.max(0, (nextT - outCtx.currentTime) * 1000) : 0;
-            var h2 = handlers;
-            setTimeout(function () { if (!stopped) { teardown(); if (h2.onHangup) h2.onHangup(); } }, wait + 600);
+            var h2 = handlers, why = m.reason || "";
+            setTimeout(function () { if (!stopped) { teardown(); if (h2.onHangup) h2.onHangup(why); } }, wait + 600);
           }
           else if (m.type === "error") fail(m.message || "Erreur de connexion avec le service vocal.");
           else if (m.type === "sessionClosed" && !ready) fail(m.reason || "La session vocale s'est fermée avant de démarrer.");

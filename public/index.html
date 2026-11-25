@@ -201,6 +201,7 @@
   .bars span:nth-child(2n) { animation-delay: .15s; } .bars span:nth-child(3n) { animation-delay: .3s; } .bars span:nth-child(4n) { animation-delay: .45s; }
   @keyframes bar { 0%, 100% { height: 10px; } 50% { height: 52px; } }
   .note { text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 12px; }
+  .r-detect { font-size: 0.85rem; color: var(--muted); margin: 6px 0 0; }
   .note.err { color: #c0392b; font-weight: 600; }
   .keys { margin-top: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; font-size: 0.72rem; color: var(--muted); font-weight: 600; }
   .keys div span { display: grid; place-items: center; width: 54px; height: 54px; margin: 0 auto 6px; border-radius: 50%; background: rgba(255,255,255,0.8); }
@@ -390,9 +391,11 @@
           <div class="verdict-stamp" id="stamp"></div>
           <div class="r-head" id="r-head"></div>
           <p class="r-lead" id="r-lead"></p>
+          <p class="r-detect" id="r-detect"></p>
           <div class="choices">
             <button class="btn ghost" id="see-reflex">Voir les réflexes clés</button>
             <button class="btn ghost" id="replay">Rejouer cet appel</button>
+            <button class="btn ghost" id="fix">Ce n'est pas ce qui s'est passé ? Corriger</button>
           </div>
         </div>
       </div>
@@ -662,14 +665,15 @@
           if (sec >= 180) hangup();
         }, 1000);
       },
-      onHangup: function () { hangup(true); },
+      onHangup: function (why) { hangup(why === "obtenu"); },
       onError: function (msg) {
         stopTimer();
         $("note").textContent = msg; $("note").classList.add("err");
       }
     });
   }
-  function hangup(fromCaller) { stopTimer(); Live.stop(); setState("decide"); }
+  /* Le résultat se déduit de l'appel : l'appelant a obtenu l'info ("obtenu") ou non. */
+  function hangup(gave) { stopTimer(); Live.stop(); decide(gave === true); }
 
   function decide(gave) {
     var s = SCN[cur];
@@ -678,6 +682,7 @@
     st.textContent = s.hacker ? "Hacker" : "Légitime";
     $("r-head").textContent = gave ? s.head.yes : s.head.no;
     $("r-lead").textContent = s.lead;
+    $("r-detect").textContent = "Ce que tu as fait : " + (gave ? s.yes : s.no) + ".";
     done[cur] = gave; renderCalls();
     setState("result");
   }
@@ -685,7 +690,8 @@
   $("answer").addEventListener("click", answer);
   $("decline").addEventListener("click", reset);
   $("start").addEventListener("click", start);
-  $("hangup").addEventListener("click", hangup);
+  $("hangup").addEventListener("click", function () { hangup(false); });
+  $("fix").addEventListener("click", function () { decide(!done[cur]); });
   $("yes").addEventListener("click", function () { decide(true); });
   $("no").addEventListener("click", function () { decide(false); });
   $("replay").addEventListener("click", function () { pick(cur); });
