@@ -414,6 +414,8 @@
   </section>
 </main>
 <script src="live.js"></script>
+<audio id="sfx-laugh" src="laugh.mp3" preload="auto"></audio>
+<audio id="sfx-win" src="win.mp3" preload="auto"></audio>
 <audio id="ring" src="ring.mp3" loop preload="auto"></audio>
 
 <script>
@@ -685,6 +687,11 @@
     $("r-detect").textContent = "Ce que tu as fait : " + (gave ? s.yes : s.no) + ".";
     done[cur] = gave; renderCalls();
     setState("result");
+    /* Sons : réussi (n'a pas donné à un hacker, ou a donné au vrai) = applaudissements ; piégé = rire du hacker. */
+    var ok = s.hacker ? !gave : gave;
+    var snd = ok ? $("sfx-win") : (s.hacker ? $("sfx-laugh") : null);
+    ["sfx-win", "sfx-laugh"].forEach(function (id) { try { $(id).pause(); $(id).currentTime = 0; } catch (e) {} });
+    if (snd) { var p = snd.play(); if (p && p.catch) p.catch(function () {}); }
   }
 
   $("answer").addEventListener("click", answer);
