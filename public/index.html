@@ -672,7 +672,7 @@
           if (sec >= 180) hangup();
         }, 1000);
       },
-      onHangup: function (why) { hangup(why === "obtenu"); },
+      onHangup: function (why) { var cb = why === "rappel" && !SCN[cur].hacker; hangup(why === "obtenu" || cb, cb); },
       onError: function (msg) {
         stopTimer();
         $("note").textContent = msg; $("note").classList.add("err");
@@ -680,16 +680,16 @@
     });
   }
   /* Le résultat se déduit de l'appel : l'appelant a obtenu l'info ("obtenu") ou non. */
-  function hangup(gave) { stopTimer(); Live.stop(); decide(gave === true); }
+  function hangup(gave, callback) { stopTimer(); Live.stop(); decide(gave === true, callback === true); }
 
-  function decide(gave) {
+  function decide(gave, callback) {
     var s = SCN[cur];
     var st = $("stamp");
     st.className = "verdict-stamp " + (s.hacker ? "h" : "l");
     st.textContent = s.hacker ? "Hacker" : "Légitime";
     $("r-head").textContent = gave ? s.head.yes : s.head.no;
     $("r-lead").textContent = s.lead;
-    $("r-detect").textContent = "Ce que tu as fait : " + (gave ? s.yes : s.no) + ".";
+    $("r-detect").textContent = callback ? "Ce que tu as fait : tu as vérifié en rappelant le poste interne 4412." : "Ce que tu as fait : " + (gave ? s.yes : s.no) + ".";
     done[cur] = gave; renderCalls();
     setState("result");
     /* Sons : réussi (n'a pas donné à un hacker, ou a donné au vrai) = applaudissements ; piégé = rire du hacker. */
