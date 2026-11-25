@@ -89,6 +89,7 @@ wss.on("connection", async (clientWs, request) => {
                 session?.sendToolResponse({ functionResponses: [{ id: call.id, name: call.name, response: { status: "call_ended" } }] });
               } catch { /* ignore */ }
               const reason = typeof call.args?.reason === "string" ? call.args.reason : "";
+              console.log(`[live] scénario ${scn.id} : l'appelant raccroche (motif : ${reason || "aucun"})`);
               safeSend(clientWs, { type: "callerHangup", reason });
             }
           }
