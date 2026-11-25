@@ -100,7 +100,8 @@ wss.on("connection", async (clientWs, request) => {
   const clean = (v, d) => (String(v || "").replace(/[^\p{L}\- ']/gu, "").trim().slice(0, 30) || d);
   const prenom = clean(url.searchParams.get("prenom"), "Bertille");
   const prenomDit = clean(url.searchParams.get("prenom_dit"), prenom === "Bertille" ? "Berty" : prenom);
-  const personalize = (t) => t.replaceAll("Bertille", prenom).replaceAll("Berty", prenomDit);
+  const manager = clean(url.searchParams.get("manager"), "Alexandra");
+  const personalize = (t) => t.replaceAll("Bertille", prenom).replaceAll("Berty", prenomDit).replaceAll("Alexandra", manager);
 
   let session = null;
   let closed = false;

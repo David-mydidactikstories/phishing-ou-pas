@@ -95,7 +95,7 @@
         ws.onopen = function () {
           ws.send(JSON.stringify({
             type: "conversation_initiation_client_data",
-            dynamic_variables: { prenom: handlers.prenom || "Bertille", prenom_dit: handlers.prenomDit || handlers.prenom || "Berty" }
+            dynamic_variables: { prenom: handlers.prenom || "Bertille", prenom_dit: handlers.prenomDit || handlers.prenom || "Berty", manager: handlers.manager || "Alexandra" }
           }));
           inCtx = new AC({ sampleRate: 16000 });
           inCtx.resume().catch(function () {});

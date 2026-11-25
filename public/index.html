@@ -360,6 +360,7 @@
           <div class="ready-sub">Lis ta fiche à droite, puis lance la simulation.</div>
           <div class="who-in">
             <label>Ton prénom<input id="prenom" type="text" maxlength="30" autocomplete="off" placeholder="Ex : Bertille"></label>
+            <label id="manager-wrap" hidden>Prénom de ton manager<input id="manager" type="text" maxlength="30" autocomplete="off" placeholder="Ex : Alexandra"></label>
           </div>
           <button class="start" id="start"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><span id="start-txt">Start</span></button>
         </div>
@@ -480,7 +481,7 @@
         return '<h2>Ton rôle : collaborateur UCM</h2>' +
           '<p class="intro-txt">Ton portable rame depuis la mise à jour et tu as ouvert un ticket au support hier. Ton téléphone sonne.</p>' +
           '<div class="doc ticket"><div class="tid">Numéro de ticket : INC-48213 · ouvert hier</div><h3>Portable très lent depuis la mise à jour</h3>' +
-          '<dl class="kv"><dt>Demandeur</dt><dd>Toi</dd><dt>Ta manager</dt><dd>Alexandra</dd><dt>Support IT</dt><dd>Poste interne 4412</dd><dt>Statut</dt><dd>En cours</dd></dl>' +
+          '<dl class="kv"><dt>Demandeur</dt><dd>Toi</dd><dt>Ton manager</dt><dd>' + esc(managerVal()) + '</dd><dt>Support IT</dt><dd>Poste interne 4412</dd><dt>Statut</dt><dd>En cours</dd></dl>' +
           '<div class="tag-label"><span class="mini">Étiquette sous ton portable</span>UCM-0457</div></div>' +
           RULES;
       },
@@ -565,6 +566,7 @@
   var $ = function (id) { return document.getElementById(id); };
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function prenomVal() { var v = ($("prenom") ? $("prenom").value : "").trim(); return v || "Bertille"; }
+  function managerVal() { var v = ($("manager") ? $("manager").value : "").trim(); return v || "Alexandra"; }
   function prenomDitVal() { return prenomVal(); }
   /* Moteur vocal : ElevenLabs par défaut s'il est configuré côté serveur, Gemini en secours (?engine=gemini pour forcer). */
   var Eng = window.Live;
@@ -574,7 +576,7 @@
       if (c.elevenlabs && !force) Eng = window.LiveEL;
       else if (!c.gemini && c.elevenlabs) Eng = window.LiveEL;
     }).catch(function () {});
-    try { var sv = JSON.parse(localStorage.getItem("pop-prenom") || "{}"); if (sv.p) { $("prenom").value = sv.p; } } catch (e) {}
+    try { var sv = JSON.parse(localStorage.getItem("pop-prenom") || "{}"); if (sv.p) { $("prenom").value = sv.p; } if (sv.m) { $("manager").value = sv.m; } } catch (e) {}
   })();
 
   function renderCalls() {
@@ -663,6 +665,7 @@
     stopTimer(); cur = i;
     var s = SCN[i];
     $("ask").textContent = s.ask; $("yes").textContent = s.yes; $("no").textContent = s.no;
+    $("manager-wrap").hidden = (i !== 1);
     renderCalls(); renderFiche(); renderGrid();
     selectTab("t-fiche");
     reset();
@@ -707,7 +710,10 @@
     var pi = $("prenom");
     if (!pi.value.trim()) { pi.classList.add("bad"); pi.focus(); return; }
     pi.classList.remove("bad");
-    try { localStorage.setItem("pop-prenom", JSON.stringify({ p: pi.value.trim() })); } catch (e) {}
+    var mi = $("manager");
+    if (cur === 1 && !mi.value.trim()) { mi.classList.add("bad"); mi.focus(); return; }
+    mi.classList.remove("bad");
+    try { localStorage.setItem("pop-prenom", JSON.stringify({ p: pi.value.trim(), m: mi.value.trim() })); } catch (e) {}
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (AC && !actx) actx = new AC();
@@ -725,7 +731,7 @@
     $("note").textContent = "Connexion…"; $("note").classList.remove("err");
     var warned = false;
     Eng.start(cur + 1, {
-      prenom: prenomVal(), prenomDit: prenomDitVal(),
+      prenom: prenomVal(), prenomDit: prenomDitVal(), manager: managerVal(),
       onReady: function () {
         $("note").textContent = cur === 2 ? "En ligne : c'est toi qui décroches, dis « Services aux membres, bonjour »" : "En ligne : parle normalement";
         sec = 0; $("timer").textContent = "0:00";
@@ -768,6 +774,7 @@
   $("decline").addEventListener("click", reset);
   $("start").addEventListener("click", start);
   $("prenom").addEventListener("input", function () { this.classList.remove("bad"); if (state === "idle") renderFiche(); });
+  $("manager").addEventListener("input", function () { this.classList.remove("bad"); if (state === "idle") renderFiche(); });
   $("prenom").addEventListener("keydown", function (e) { if (e.key === "Enter") start(); });
   $("hangup").addEventListener("click", function () { hangup(false); });
   $("fix").addEventListener("click", function () { decide(!done[cur]); });
