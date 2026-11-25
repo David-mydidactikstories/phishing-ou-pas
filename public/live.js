@@ -81,7 +81,7 @@
           inCtx = new AC({ sampleRate: 16000 });
           inCtx.resume().catch(function () {});
           var src = inCtx.createMediaStreamSource(stream);
-          proc = inCtx.createScriptProcessor(4096, 1, 1);
+          proc = inCtx.createScriptProcessor(2048, 1, 1);
           var mute = inCtx.createGain(); mute.gain.value = 0;
           src.connect(proc); proc.connect(mute); mute.connect(inCtx.destination);
           proc.onaudioprocess = function (ev) {

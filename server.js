@@ -3,7 +3,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer, WebSocket } from "ws";
-import { GoogleGenAI, Modality, Type } from "@google/genai";
+import { GoogleGenAI, Modality, Type, StartSensitivity, EndSensitivity } from "@google/genai";
 import { SCENARIOS } from "./prompts.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -69,6 +69,15 @@ wss.on("connection", async (clientWs, request) => {
         responseModalities: [Modality.AUDIO],
         speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: scn.voice } } },
         tools: [{ functionDeclarations: [endCallTool] }],
+        // Détection de la voix plus réactive : les réponses courtes (« oui », « c'est moi ») sont captées du premier coup.
+        realtimeInputConfig: {
+          automaticActivityDetection: {
+            startOfSpeechSensitivity: StartSensitivity.START_SENSITIVITY_HIGH,
+            endOfSpeechSensitivity: EndSensitivity.END_SENSITIVITY_HIGH,
+            prefixPaddingMs: 150,
+            silenceDurationMs: 450,
+          },
+        },
         systemInstruction: scn.prompt,
       },
       callbacks: {
