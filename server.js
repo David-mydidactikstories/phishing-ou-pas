@@ -24,8 +24,52 @@ function safeSend(ws, payload) {
   if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(payload));
 }
 
+// Agents ElevenLabs (un par scénario). Surchargeables par variables d'environnement.
+const EL_AGENTS = {
+  1: process.env.EL_AGENT_1 || "agent_0701m89t8qjceyha265js2wxez4e", // Thomas (banque)
+  2: process.env.EL_AGENT_2 || "agent_5401m89weyzqffssxx2r5vfkvs28", // Julien (IT)
+  3: process.env.EL_AGENT_3 || "agent_9301m89wf1daf50vtpnxkeah4am2", // Marc Delvaux
+  4: process.env.EL_AGENT_4 || "agent_7001m89wf3d3ee58fzfvx2g2wdnx", // Stéphanie (colis)
+};
+
 const app = express();
-app.get("/api/health", (_req, res) => res.json({ ok: true, model: LIVE_MODEL, keyConfigured: Boolean(process.env.GEMINI_API_KEY) }));
+app.get("/api/health", (_req, res) =>
+  res.json({
+    ok: true,
+    engine: process.env.ELEVENLABS_API_KEY ? "elevenlabs" : "gemini",
+    elevenlabsKey: Boolean(process.env.ELEVENLABS_API_KEY),
+    geminiKey: Boolean(process.env.GEMINI_API_KEY),
+    model: LIVE_MODEL,
+  }),
+);
+app.get("/api/config", (_req, res) =>
+  res.json({
+    elevenlabs: Boolean(process.env.ELEVENLABS_API_KEY),
+    gemini: Boolean(process.env.GEMINI_API_KEY),
+  }),
+);
+// URL signée ElevenLabs : la clé API reste côté serveur, le navigateur se connecte directement.
+app.get("/api/el-session", async (req, res) => {
+  const agentId = EL_AGENTS[Number(req.query.scenario)];
+  if (!agentId) return res.status(400).json({ error: "Scénario inconnu." });
+  if (!process.env.ELEVENLABS_API_KEY) return res.status(503).json({ error: "Clé ElevenLabs manquante côté serveur (variable ELEVENLABS_API_KEY)." });
+  try {
+    const r = await fetch(
+      `https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=${encodeURIComponent(agentId)}`,
+      { headers: { "xi-api-key": process.env.ELEVENLABS_API_KEY } },
+    );
+    if (!r.ok) {
+      const body = await r.text();
+      console.error("[el] signed url", r.status, body.slice(0, 200));
+      return res.status(502).json({ error: `ElevenLabs a refusé la connexion (${r.status}).` });
+    }
+    const data = await r.json();
+    res.json({ signedUrl: data.signed_url });
+  } catch (err) {
+    console.error("[el] signed url", err);
+    res.status(502).json({ error: "Impossible de joindre ElevenLabs." });
+  }
+});
 app.use(express.static(path.join(__dirname, "public")));
 
 const server = http.createServer(app);
@@ -51,6 +95,12 @@ wss.on("connection", async (clientWs, request) => {
     safeSend(clientWs, { type: "error", message: "Clé API Gemini manquante côté serveur (variable GEMINI_API_KEY)." });
     return clientWs.close(1011, "no key");
   }
+
+  // Prénom saisi avant l'appel (secours Gemini) : remplace Bertille / Berty dans le prompt.
+  const clean = (v, d) => (String(v || "").replace(/[^\p{L}\- ']/gu, "").trim().slice(0, 30) || d);
+  const prenom = clean(url.searchParams.get("prenom"), "Bertille");
+  const prenomDit = clean(url.searchParams.get("prenom_dit"), prenom === "Bertille" ? "Berty" : prenom);
+  const personalize = (t) => t.replaceAll("Bertille", prenom).replaceAll("Berty", prenomDit);
 
   let session = null;
   let closed = false;
@@ -78,7 +128,7 @@ wss.on("connection", async (clientWs, request) => {
             silenceDurationMs: 450,
           },
         },
-        systemInstruction: scn.prompt,
+        systemInstruction: personalize(scn.prompt),
       },
       callbacks: {
         onopen: () => {

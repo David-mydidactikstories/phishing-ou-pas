@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Phishing ou pas ? — simulation d'appel vocal en direct (Gemini Live) pour l'atelier UCM",
+  "description": "Phishing ou pas ? — simulation d'appel vocal en direct (ElevenLabs Agents, Gemini Live en secours) pour l'atelier UCM",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"

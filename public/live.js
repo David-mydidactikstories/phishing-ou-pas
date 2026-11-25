@@ -74,7 +74,7 @@
         if (stopped) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
         stream = s;
         var proto = location.protocol === "https:" ? "wss:" : "ws:";
-        ws = new WebSocket(proto + "//" + location.host + "/api/live?scenario=" + scenarioId);
+        ws = new WebSocket(proto + "//" + location.host + "/api/live?scenario=" + scenarioId + "&prenom=" + encodeURIComponent(handlers.prenom || "") + "&prenom_dit=" + encodeURIComponent(handlers.prenomDit || ""));
         var ready = false;
 
         ws.onopen = function () {

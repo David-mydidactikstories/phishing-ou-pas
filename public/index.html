@@ -176,6 +176,12 @@
   .lock-date { color: var(--muted); font-weight: 600; margin-top: 6px; }
   .ready { margin-top: auto; font-family: var(--font-display); font-weight: 800; font-size: 1.5rem; }
   .ready-sub { color: var(--muted); font-size: 0.92rem; margin: 4px 0 18px; max-width: 22ch; }
+  .who-in { width: 100%; display: grid; gap: 8px; margin: 0 0 14px; text-align: left; }
+  .who-in label { font-size: 0.78rem; font-weight: 700; color: var(--muted); display: grid; gap: 4px; }
+  .who-in input { box-sizing: border-box; width: 100%; font: inherit; font-size: 1rem; font-weight: 600; color: var(--ink); background: #fff; border: 2px solid #d5dcef; border-radius: 12px; padding: 10px 12px; }
+  .who-in input:focus-visible { outline: 3px solid var(--blue); outline-offset: 1px; }
+  .who-in input.bad { border-color: #e0455b; animation: shake .3s; }
+  @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
   .start {
     all: unset; cursor: pointer; box-sizing: border-box; width: 100%; text-align: center;
     display: inline-flex; align-items: center; justify-content: center; gap: 10px;
@@ -352,6 +358,10 @@
           <div class="lock-date">Aucun appel pour l'instant</div>
           <div class="ready">Prêt ?</div>
           <div class="ready-sub">Lis ta fiche à droite, puis lance la simulation.</div>
+          <div class="who-in">
+            <label>Ton prénom<input id="prenom" type="text" maxlength="30" autocomplete="off" placeholder="Ex : Bertille"></label>
+            <label>Comment ça se prononce ? (facultatif)<input id="prenom-dit" type="text" maxlength="30" autocomplete="off" placeholder="Ex : Berty"></label>
+          </div>
           <button class="start" id="start"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg><span id="start-txt">Start</span></button>
         </div>
 
@@ -423,6 +433,7 @@
   </section>
 </main>
 <script src="live.js"></script>
+<script src="el.js"></script>
 <audio id="sfx-laugh" src="laugh.mp3" preload="auto"></audio>
 <audio id="sfx-fail" src="fail.mp3" preload="auto"></audio>
 <audio id="sfx-win" src="win.mp3" preload="auto"></audio>
@@ -439,10 +450,10 @@
       head: { yes: "Piégé.", no: "Bien vu." },
       lead: "C'était un faux conseiller. Il avait ton numéro de carte, pas ton CVC : un numéro de carte seul ne prouve rien.",
       fiche: function () {
-        return '<h2>Ton rôle : Bertille, cliente</h2>' +
-          '<p class="intro-txt">Tu es cliente de la Banque Mosane, agence de Tournai. Ton téléphone sonne en pleine journée. Décroche et réagis comme d\'habitude.</p>' +
+        return '<h2>Ton rôle : titulaire de la carte</h2>' +
+          '<p class="intro-txt">Tu as un compte à la Banque Mosane, agence de Tournai. Ton téléphone sonne en pleine journée. Décroche et réagis comme d\'habitude.</p>' +
           '<div class="doc-head"><div><b>Ta carte bancaire</b><div class="mini">Données fictives pour le jeu</div></div><button class="flip" id="flip">Retourner la carte</button></div>' +
-          '<div class="doc card" id="card-front"><div class="top"><b>Banque Mosane</b><span>Spécimen</span></div><div class="pan">5412 7500 0000 7731</div><div class="row"><div>Titulaire<b>Bertille</b></div><div>Expire<b>09/28</b></div><div>Réseau<b>Mastercard</b></div></div></div>' +
+          '<div class="doc card" id="card-front"><div class="top"><b>Banque Mosane</b><span>Spécimen</span></div><div class="pan">5412 7500 0000 7731</div><div class="row"><div>Titulaire<b>' + esc(prenomVal()) + '</b></div><div>Expire<b>09/28</b></div><div>Réseau<b>Mastercard</b></div></div></div>' +
           '<div class="doc card back" id="card-back" hidden><div class="strip"></div><div class="cvc"><div class="sig"></div><span class="code">482</span></div><div class="mini" style="color:#cfdcff;margin-top:auto">Code CVC au dos</div></div>' +
           RULES;
       },
@@ -520,12 +531,12 @@
       ask: "Tu lis le code ou pas ?", yes: "Je lis le code", no: "Je ne le lis pas",
       hacker: true,
       head: { yes: "Piégé.", no: "Bien vu." },
-      lead: "Ce n'était pas bpost. Le code venait de WhatsApp : en le lisant, tu lui donnais ton compte. Un livreur n'a jamais besoin d'un code reçu par SMS.",
+      lead: "Ce n'était pas bpost. Le code venait de WhatsApp : en le lisant, tu lui donnais ton compte. Un transporteur n'a jamais besoin d'un code reçu par SMS : à l'escroc, il suffisait de ton numéro de téléphone.",
       fiche: function () {
         return '<h2>Ton rôle : toi, un jour normal</h2>' +
           '<p class="intro-txt">Tu as passé une commande sur Amazon et tu attends le colis cette semaine. Ton téléphone sonne.</p>' +
           '<div class="doc ticket"><div class="tid">Ta commande Amazon</div><h3>Livraison prévue cette semaine</h3>' +
-          '<dl class="kv"><dt>Adresse</dt><dd>Rue des Tilleuls 14, boîte 3</dd><dt>Transporteur</dt><dd>Pas précisé</dd></dl></div>' +
+          '<dl class="kv"><dt>Statut</dt><dd>En cours de livraison</dd><dt>Transporteur</dt><dd>Pas précisé</dd></dl></div>' +
           '<div class="doc-head"><div><b>Le SMS qui arrive pendant l\'appel</b><div class="mini">Données fictives pour le jeu</div></div></div>' +
           '<div class="doc sms"><div class="sms-from">WhatsApp</div><p>Ton code WhatsApp : <b class="mono">418-273</b>. Ne partage ce code avec personne.</p></div>' +
           RULES;
@@ -537,12 +548,13 @@
         ["A résisté à l'urgence", "« Le colis repart ce soir, il y aura des frais. »"],
         ["A refusé de lire le code", "A tenu son refus jusqu'au bout."]
       ],
-      params: [["Rôle de l'appelante", "Fausse livreuse « Stéphanie de bpost »"], ["Prétexte", "Numéro de boîte manquant"], ["Ce qu'elle veut", "Le code WhatsApp reçu par SMS"], ["Abandonne après", "2 refus ou 2 demandes de vérification"]],
+      params: [["Rôle de l'appelante", "Fausse employée « Stéphanie de bpost »"], ["Prétexte", "Rendez-vous de livraison à planifier"], ["Ce qu'elle veut", "Le code WhatsApp reçu par SMS"], ["Abandonne après", "2 refus ou 2 demandes de vérification"]],
       reflex: [
         ["Un code reçu par SMS ne se dit à personne", "Ni à un livreur, ni à ta banque, ni à un collègue. Il sert à prouver que c'est toi."],
         ["Lis le SMS en entier", "Il disait WhatsApp, pas bpost : l'appel et le message ne collaient pas."],
         ["Vérifie dans l'appli officielle", "Le vrai suivi de ton colis est dans l'appli ou sur le site, avec ton numéro de suivi."],
-        ["« Le colis repart ce soir » est une urgence fabriquée", "Elle sert à t'empêcher de vérifier."]
+        ["« Le colis repart ce soir » est une urgence fabriquée", "Elle sert à t'empêcher de vérifier."],
+        ["L'escroc n'a besoin que de ton numéro", "Il lance l'inscription de ton WhatsApp sur son téléphone : le SMS que tu reçois est le vrai. Active la vérification en deux étapes (un code PIN que toi seul connais)."]
       ]
     }
   ];
@@ -552,6 +564,19 @@
   var done = SCN.map(function () { return null; });
   var checks = SCN.map(function () { return []; });
   var $ = function (id) { return document.getElementById(id); };
+  function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function prenomVal() { var v = ($("prenom") ? $("prenom").value : "").trim(); return v || "Bertille"; }
+  function prenomDitVal() { var v = ($("prenom-dit") ? $("prenom-dit").value : "").trim(); return v || prenomVal(); }
+  /* Moteur vocal : ElevenLabs par défaut s'il est configuré côté serveur, Gemini en secours (?engine=gemini pour forcer). */
+  var Eng = window.Live;
+  (function () {
+    var force = /[?&]engine=gemini/.test(location.search);
+    fetch("/api/config").then(function (r) { return r.json(); }).then(function (c) {
+      if (c.elevenlabs && !force) Eng = window.LiveEL;
+      else if (!c.gemini && c.elevenlabs) Eng = window.LiveEL;
+    }).catch(function () {});
+    try { var sv = JSON.parse(localStorage.getItem("pop-prenom") || "{}"); if (sv.p) { $("prenom").value = sv.p; $("prenom-dit").value = sv.d || ""; } } catch (e) {}
+  })();
 
   function renderCalls() {
     var box = $("calls"); box.innerHTML = "";
@@ -672,7 +697,7 @@
     if (synthId) { clearInterval(synthId); synthId = null; }
   }
   function reset() {
-    if (window.Live) Live.stop();
+    if (window.Live) Live.stop(); if (window.LiveEL) LiveEL.stop();
     if (startTimer) { clearTimeout(startTimer); startTimer = null; }
     stopRing();
     $("start").disabled = false; $("start-txt").textContent = "Start";
@@ -680,6 +705,10 @@
   }
   function start() {
     if (startTimer) return;
+    var pi = $("prenom");
+    if (!pi.value.trim()) { pi.classList.add("bad"); pi.focus(); return; }
+    pi.classList.remove("bad");
+    try { localStorage.setItem("pop-prenom", JSON.stringify({ p: pi.value.trim(), d: $("prenom-dit").value.trim() })); } catch (e) {}
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (AC && !actx) actx = new AC();
@@ -696,13 +725,14 @@
     stopTimer();
     $("note").textContent = "Connexion…"; $("note").classList.remove("err");
     var warned = false;
-    Live.start(cur + 1, {
+    Eng.start(cur + 1, {
+      prenom: prenomVal(), prenomDit: prenomDitVal(),
       onReady: function () {
-        $("note").textContent = "En ligne : parle normalement";
+        $("note").textContent = cur === 2 ? "En ligne : c'est toi qui décroches, dis « Services aux membres, bonjour »" : "En ligne : parle normalement";
         sec = 0; $("timer").textContent = "0:00";
         timerId = setInterval(function () {
           sec++; $("timer").textContent = fmt(sec);
-          if (sec >= 165 && !warned) { warned = true; Live.warn(); }
+          if (sec >= 165 && !warned) { warned = true; Eng.warn(); }
           if (sec >= 180) hangup();
         }, 1000);
       },
@@ -714,7 +744,7 @@
     });
   }
   /* Le résultat se déduit de l'appel : l'appelant a obtenu l'info ("obtenu") ou non. */
-  function hangup(gave, callback) { stopTimer(); Live.stop(); decide(gave === true, callback === true); }
+  function hangup(gave, callback) { stopTimer(); Eng.stop(); decide(gave === true, callback === true); }
 
   function decide(gave, callback) {
     var s = SCN[cur];
@@ -738,6 +768,8 @@
   $("answer").addEventListener("click", answer);
   $("decline").addEventListener("click", reset);
   $("start").addEventListener("click", start);
+  $("prenom").addEventListener("input", function () { this.classList.remove("bad"); if (state === "idle") renderFiche(); });
+  $("prenom").addEventListener("keydown", function (e) { if (e.key === "Enter") start(); });
   $("hangup").addEventListener("click", function () { hangup(false); });
   $("fix").addEventListener("click", function () { decide(!done[cur]); });
   $("yes").addEventListener("click", function () { decide(true); });
