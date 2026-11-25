@@ -720,6 +720,8 @@
       if (actx && actx.state === "suspended") actx.resume();
       if (fileOk) { ringEl.muted = true; var p = ringEl.play(); if (p && p.then) p.then(function () { if (state === "idle") { ringEl.pause(); ringEl.currentTime = 0; } ringEl.muted = false; }).catch(function () { fileOk = false; }); }
     } catch (e) {}
+    /* Débloque les sons de résultat tant qu'on a un clic de l'utilisateur (sinon le navigateur peut les bloquer à la fin d'un long appel). */
+    ["sfx-win", "sfx-laugh", "sfx-fail"].forEach(function (id) { var a = $(id); try { a.muted = true; var q = a.play(); var undo = function () { a.pause(); a.currentTime = 0; a.muted = false; }; if (q && q.then) q.then(undo).catch(function () { a.muted = false; }); else undo(); } catch (e) { a.muted = false; } });
     $("start").disabled = true; $("start-txt").textContent = "Ça arrive…";
     startTimer = setTimeout(function () { startTimer = null; setState("incoming"); startRing(); }, 2000);
   }
