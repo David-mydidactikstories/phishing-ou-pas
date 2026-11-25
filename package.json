@@ -1,0 +1,17 @@
+{
+  "name": "phishing-ou-pas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Phishing ou pas ? — simulation d'appel vocal en direct (Gemini Live) pour l'atelier UCM",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@google/genai": "^3.6.1",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  }
+}
