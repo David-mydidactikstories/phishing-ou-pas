@@ -449,6 +449,7 @@
 <audio id="sfx-laugh" src="laugh.mp3?v=3" preload="auto"></audio>
 <audio id="sfx-fail" src="fail.mp3?v=3" preload="auto"></audio>
 <audio id="sfx-win" src="win.mp3?v=3" preload="auto"></audio>
+<audio id="sfx-ding" src="ding.mp3?v=1" preload="auto"></audio>
 <audio id="ring" src="ring.mp3" loop preload="auto"></audio>
 
 <script>
@@ -732,7 +733,7 @@
       if (fileOk) { ringEl.muted = true; var p = ringEl.play(); if (p && p.then) p.then(function () { if (state === "idle") { ringEl.pause(); ringEl.currentTime = 0; } ringEl.muted = false; }).catch(function () { fileOk = false; }); }
     } catch (e) {}
     /* Débloque les sons de résultat tant qu'on a un clic de l'utilisateur (sinon le navigateur peut les bloquer à la fin d'un long appel). */
-    ["sfx-win", "sfx-laugh", "sfx-fail"].forEach(function (id) { var a = $(id); try { a.muted = true; var q = a.play(); var undo = function () { a.pause(); a.currentTime = 0; a.muted = false; }; if (q && q.then) q.then(undo).catch(function () { a.muted = false; }); else undo(); } catch (e) { a.muted = false; } });
+    ["sfx-win", "sfx-laugh", "sfx-fail", "sfx-ding"].forEach(function (id) { var a = $(id); try { a.muted = true; var q = a.play(); var undo = function () { a.pause(); a.currentTime = 0; a.muted = false; }; if (q && q.then) q.then(undo).catch(function () { a.muted = false; }); else undo(); } catch (e) { a.muted = false; } });
     $("start").disabled = true; $("start-txt").textContent = "Ça arrive…";
     startTimer = setTimeout(function () { startTimer = null; setState("incoming"); startRing(); }, 2000);
   }
@@ -741,6 +742,9 @@
   /* Notification SMS qui arrive pendant l'appel 4 */
   var smsTimer = null;
   function smsBeep() {
+    try { var d = $("sfx-ding"); d.pause(); d.currentTime = 0; d.volume = 1; var pr = d.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+    try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) {}
+    return;
     try {
       var C = window.AudioContext || window.webkitAudioContext; if (!C) return;
       if (!actx) actx = new C();
