@@ -16,6 +16,24 @@
     return btoa(bin);
   }
 
+  /* Effet « téléphone » : bande passante étroite (≈ 350–3300 Hz), léger grain et compression.
+     Désactivable avec ?clean=1 dans l'adresse. */
+  var phone = null;
+  function bus() {
+    if (/[?&]clean=1/.test(location.search)) return outCtx.destination;
+    if (phone) return phone;
+    var hp = outCtx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 350; hp.Q.value = 0.8;
+    var lp = outCtx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 3300; lp.Q.value = 0.9;
+    var mid = outCtx.createBiquadFilter(); mid.type = "peaking"; mid.frequency.value = 1700; mid.gain.value = 5; mid.Q.value = 0.8;
+    var sh = outCtx.createWaveShaper(), curve = new Float32Array(1024);
+    for (var i = 0; i < 1024; i++) { var x = i / 512 - 1; curve[i] = Math.tanh(x * 2.2) / Math.tanh(2.2); }
+    sh.curve = curve;
+    var comp = outCtx.createDynamicsCompressor(); comp.threshold.value = -26; comp.ratio.value = 6; comp.attack.value = 0.003; comp.release.value = 0.12;
+    var out = outCtx.createGain(); out.gain.value = 1.15;
+    hp.connect(lp); lp.connect(mid); mid.connect(sh); sh.connect(comp); comp.connect(out); out.connect(outCtx.destination);
+    phone = hp; return phone;
+  }
+
   function play(b64) {
     if (!outCtx) return;
     var bin = atob(b64), len = bin.length, bytes = new Uint8Array(len);
@@ -24,7 +42,7 @@
     var buf = outCtx.createBuffer(1, Math.max(1, count), 24000), ch = buf.getChannelData(0);
     for (var k = 0; k < count; k++) ch[k] = view.getInt16(k * 2, true) / 32768;
     var src = outCtx.createBufferSource();
-    src.buffer = buf; src.connect(outCtx.destination);
+    src.buffer = buf; src.connect(bus());
     var t = Math.max(outCtx.currentTime + 0.015, nextT);
     nextT = t + buf.duration;
     sources.push(src);
@@ -64,7 +82,7 @@
       teardown();
       handlers = h || {}; stopped = false;
       var AC = window.AudioContext || window.webkitAudioContext;
-      outCtx = new AC({ sampleRate: 24000 });
+      outCtx = new AC({ sampleRate: 24000 }); phone = null;
       outCtx.resume().catch(function () {});
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -74,7 +92,7 @@
         if (stopped) { s.getTracks().forEach(function (t) { t.stop(); }); return; }
         stream = s;
         var proto = location.protocol === "https:" ? "wss:" : "ws:";
-        ws = new WebSocket(proto + "//" + location.host + "/api/live?scenario=" + scenarioId + "&prenom=" + encodeURIComponent(handlers.prenom || "") + "&prenom_dit=" + encodeURIComponent(handlers.prenomDit || "") + "&manager=" + encodeURIComponent(handlers.manager || ""));
+        ws = new WebSocket(proto + "//" + location.host + ((location.pathname.replace(/[^\/]*$/, "")) || "/") + "api/live?scenario=" + scenarioId + "&prenom=" + encodeURIComponent(handlers.prenom || "") + "&prenom_dit=" + encodeURIComponent(handlers.prenomDit || "") + "&manager=" + encodeURIComponent(handlers.manager || ""));
         var ready = false;
 
         ws.onopen = function () {
